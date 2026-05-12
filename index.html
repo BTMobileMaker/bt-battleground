@@ -1,37 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>BT Battleground Pro</title>
+    <title>BT Battleground Ultra</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     <style>
-        .ui-layer { position: fixed; width: 100%; height: 100%; pointer-events: none; }
-        .btn { pointer-events: auto; position: absolute; background: rgba(255,0,0,0.7); color: white; border-radius: 50%; width: 70px; height: 70px; border: 2px solid white; font-weight: bold; }
-        #fire { bottom: 50px; right: 50px; }
-        #jump { bottom: 130px; right: 130px; background: rgba(0,0,0,0.5); }
+        .ui-controls { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: space-around; pointer-events: none; }
+        .btn-game { pointer-events: auto; background: rgba(0,0,0,0.6); color: yellow; border: 2px solid gold; padding: 15px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="ui-layer">
-        <button class="btn" id="fire">FIRE</button>
-        <button class="btn" id="jump">JUMP</button>
+    <div class="ui-controls">
+        <button class="btn-game" onclick="alert('Mic On! Bolna shuru karein...')">🎤 MIC: ON</button>
+        <button class="btn-game" id="fireBtn">🔥 FIRE</button>
     </div>
 
-    <a-scene joystick>
-        <a-sky color="#87CEEB"></a-sky>
+    <a-scene>
+        <!-- Real Sky and Ground -->
+        <a-sky color="#6FB1EE"></a-sky>
+        <a-plane position="0 0 0" rotation="-90 0 0" width="500" height="500" color="#348C31"></a-plane>
 
-        <a-plane position="0 0 0" rotation="-90 0 0" width="100" height="100" color="#2d5a27"></a-plane>
-
-        <a-entity id="player" position="0 1.6 0">
-            <a-camera look-controls="pointerLockEnabled: false">
-                <a-box position="0.3 -0.4 -0.5" width="0.1" height="0.1" depth="0.5" color="black"></a-box>
+        <!-- Player with 3D Gun View -->
+        <a-entity id="rig" movement-controls="fly: false; speed: 0.3">
+            <a-entity camera position="0 1.6 0" look-controls>
+                <a-entity id="gun" position="0.3 -0.2 -0.4" rotation="0 180 0" scale="0.05 0.05 0.05">
+                     <a-box width="1" height="2" depth="5" color="black"></a-box> <!-- Basic Gun Shape -->
+                </a-entity>
             </a-camera>
         </a-entity>
 
-        <a-box position="-5 1 -10" color="#4b3621" width="2" height="2" depth="2"></a-box> <a-cylinder position="5 2 -15" radius="0.5" height="4" color="#228B22"></a-cylinder> </a-scene>
+        <!-- A Simple 3D House (Ghar) -->
+        <a-entity position="-10 0 -20">
+            <a-box position="0 2.5 0" width="8" height="5" depth="8" color="#A52A2A"></a-box> <!-- Walls -->
+            <a-cone position="0 6 0" radius-bottom="6" height="3" color="#4a4a4a"></a-cone> <!-- Roof -->
+            <a-box position="0 1.5 4.1" width="2" height="3" depth="0.2" color="#4b3621"></a-box> <!-- Door -->
+        </a-entity>
+
+        <!-- Random Character (Enemy) -->
+        <a-entity position="5 0 -10" id="enemy">
+            <a-capsule color="red" radius="0.5" height="1.8"></a-capsule> <!-- Placeholder for Real Character -->
+            <a-text value="Random Player" align="center" position="0 2.2 0" color="white"></a-text>
+        </a-entity>
+
+        <a-light type="ambient" color="#BBB"></a-light>
+        <a-light type="directional" color="#FFF" intensity="0.6" position="-0.5 1 1"></a-light>
+    </a-scene>
 
     <script>
-        document.getElementById('fire').addEventListener('touchstart', function() {
-            alert("Dishkyoon! Gun shooting start...");
+        // Shooting Logic
+        document.getElementById('fireBtn').addEventListener('touchstart', () => {
+            console.log("Fired!");
         });
     </script>
 </body>
