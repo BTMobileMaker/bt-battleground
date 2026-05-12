@@ -1,69 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>BT Minecraft Realistic Pro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BT Battleground | Minecraft x Free Fire</title>
+    <!-- A-Frame for 3D Engine -->
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+    <!-- Extras for Physics and Movement -->
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+    <style>
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+        }
+        .crosshair {
+            position: absolute; top: 50%; left: 50%; width: 20px; height: 20px;
+            border: 2px solid #00ff00; border-radius: 50%; transform: translate(-50%, -50%);
+        }
+        .stats {
+            position: absolute; bottom: 20px; left: 20px; color: white;
+            font-family: Arial, sans-serif; background: rgba(0,0,0,0.5); padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <a-scene fog="type: exponential; color: #ABC9FF; density: 0.002">
-        <!-- Assets for 3D Models -->
+
+    <!-- UI Overlay (Guns, Health, Crosshair) -->
+    <div id="ui-layer">
+        <div class="crosshair"></div>
+        <div class="stats">
+            HP: 100 | Ammo: 30/90 <br>
+            Mode: Minecraft Build (Click to Place)
+        </div>
+    </div>
+
+    <a-scene shadow="type: pcfsoft" fog="type: exponential; color: #87CEEB; density: 0.01">
+        
         <a-assets>
-            <img id="grass" src="https://cdn.glitch.global/363f8d39-3a8e-4860-9197-046603a113d0/grass.jpg">
-            <img id="sky" src="https://cdn.glitch.global/363f8d39-3a8e-4860-9197-046603a113d0/sunset.jpg">
+            <!-- Realistic Textures -->
+            <img id="grass-tex" src="https://cdn.glitch.me/363f8d39-3a8e-4860-9197-046603a113d0/grass.jpg">
+            <img id="brick-tex" src="https://cdn.glitch.me/363f8d39-3a8e-4860-9197-046603a113d0/bricks.jpg">
         </a-assets>
 
-        <!-- Realistic Sunset Sky -->
-        <a-sky src="#sky" rotation="0 -90 0"></a-sky>
+        <!-- 1. REALISTIC WORLD (Mountains & Sky) -->
+        <a-sky color="#87CEEB" animation="property: material.color; from: #87CEEB; to: #2C3E50; dur: 100000; dir: alternate; loop: true"></a-sky>
+        <a-plane position="0 0 0" rotation="-90 0 0" width="1000" height="1000" src="#grass-tex" repeat="100 100" static-body></a-plane>
 
-        <!-- Big Grass World -->
-        <a-plane position="0 0 0" rotation="-90 0 0" width="500" height="500" src="#grass" repeat="100 100" shadow="receive: true"></a-plane>
-
-        <!-- Player with Voice/Movement -->
-        <a-entity id="rig" movement-controls="fly: false; speed: 0.3">
-            <a-entity camera position="0 1.6 0" look-controls>
-                <a-cursor color="#FFF"></a-cursor>
-                <!-- Hand with Diamond Sword (1000002707.jpg style) -->
-                <a-entity position="0.5 -0.4 -0.6" rotation="0 90 0">
-                    <a-box width="0.1" height="0.6" depth="0.1" color="#4ee2ec"></a-box>
+        <!-- 2. PLAYER (Free Fire Movement + Gun) -->
+        <a-entity id="player" movement-controls="speed: 0.3; constrainToNavMesh: true" position="0 0 5">
+            <a-entity camera look-controls position="0 1.6 0">
+                <!-- Gun Model (Realistic Placement) -->
+                <a-entity id="weapon" position="0.4 -0.3 -0.6" rotation="0 180 0">
+                    <a-box width="0.05" height="0.1" depth="0.5" color="#222"></a-box> <!-- Gun Barrel -->
+                    <a-box width="0.05" height="0.2" depth="0.05" position="0 -0.1 0.2" color="#333"></a-box> <!-- Grip -->
                 </a-entity>
+                <!-- Crosshair Interaction -->
+                <a-cursor raycaster="objects: .interactable" far="10"></a-cursor>
             </a-entity>
         </a-entity>
 
-        <!-- Realistic Large House (1000002713.jpg style) -->
-        <a-entity position="0 0 -15">
-            <!-- Ground Floor -->
-            <a-box position="0 2 0" width="10" height="4" depth="10" color="#7d5c41" material="roughness: 1"></a-box>
-            <!-- First Floor -->
-            <a-box position="0 5.5 0" width="8" height="3" depth="8" color="#e3d4c3"></a-box>
-            <!-- Entrance -->
-            <a-plane position="0 1 5.01" width="2" height="3" color="#3d2b1f"></a-plane>
-            <!-- Roof -->
-            <a-cone position="0 8.5 0" radius-bottom="7" height="4" color="#4a4a4a"></a-cone>
+        <!-- 3. MINECRAFT BUILDING SYSTEM (Initial House) -->
+        <a-entity id="world-blocks">
+            <!-- Starting House (1000002713.jpg Style) -->
+            <a-box class="interactable" position="0 0.5 -5" src="#brick-tex" shadow></a-box>
+            <a-box class="interactable" position="1 0.5 -5" src="#brick-tex" shadow></a-box>
+            <a-box class="interactable" position="-1 0.5 -5" src="#brick-tex" shadow></a-box>
+            <a-box class="interactable" position="0 1.5 -5" src="#brick-tex" shadow></a-box>
         </a-entity>
 
-        <!-- Forest (Pedar - 1000002709.jpg style) -->
-        <a-entity id="forest">
-            <!-- Random Trees -->
-            <a-entity position="-15 0 -20">
-                <a-cylinder radius="0.5" height="5" color="#5C4033"></a-cylinder>
-                <a-sphere position="0 4 0" radius="3" color="#228B22"></a-sphere>
-            </a-entity>
-            <a-entity position="20 0 -30">
-                <a-cylinder radius="0.7" height="6" color="#5C4033"></a-cylinder>
-                <a-sphere position="0 5 0" radius="4" color="#1a5e1a"></a-sphere>
-            </a-entity>
+        <!-- 4. NATURE (Trees & Birds) -->
+        <a-entity position="-10 0 -20">
+            <a-cylinder radius="0.5" height="4" color="#5C4033"></a-cylinder>
+            <a-sphere position="0 3 0" radius="2" color="#228B22"></a-sphere>
         </a-entity>
 
-        <!-- Animals (1000002712.jpg style) -->
-        <a-box position="5 0.5 -10" width="1" height="1" depth="1.5" color="white">
-            <a-box position="0 0.8 0.8" width="0.6" height="0.6" depth="0.6" color="white"></a-box> <!-- Cow/Dog Head -->
-        </a-box>
+        <!-- 5. ENEMIES (Zombies - 1000002708.jpg Style) -->
+        <a-entity id="zombie" position="5 0 -15" class="interactable">
+            <a-box width="0.8" height="1.8" depth="0.5" color="#4CAF50">
+                <a-box width="0.6" height="0.6" depth="0.6" position="0 1.2 0" color="#2E7D32"></a-box>
+            </a-box>
+        </a-entity>
 
         <!-- Lights -->
-        <a-light type="ambient" color="#BBB"></a-light>
-        <a-light type="directional" color="#FFF" intensity="0.6" position="-1 1 1" castShadow="true"></a-light>
+        <a-light type="ambient" intensity="0.6"></a-light>
+        <a-light type="directional" position="10 20 10" intensity="0.8" castShadow="true"></a-light>
 
     </a-scene>
+
+    <script>
+        // Simple Building Logic (Minecraft Style)
+        document.querySelector('a-scene').addEventListener('click', function (evt) {
+            if (evt.detail.cursorEl) {
+                let hitPoint = evt.detail.intersection.point;
+                let newBlock = document.createElement('a-box');
+                // Rounding to nearest grid (Minecraft feel)
+                newBlock.setAttribute('position', {
+                    x: Math.round(hitPoint.x),
+                    y: Math.round(hitPoint.y + 0.5),
+                    z: Math.round(hitPoint.z)
+                });
+                newBlock.setAttribute('src', '#brick-tex');
+                newBlock.setAttribute('class', 'interactable');
+                newBlock.setAttribute('shadow', '');
+                document.querySelector('#world-blocks').appendChild(newBlock);
+            }
+        });
+
+        // Shooting Sound / Effect (Free Fire Style)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { // Fire with Space
+                console.log("Bang! Shooting...");
+                // Add Muzzle Flash or Sound here
+            }
+        });
+    </script>
 </body>
 </html>
+    
